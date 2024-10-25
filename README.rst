@@ -34,10 +34,26 @@ nlptextprep
 ===========
 
 
-    Add a short description here!
+    One Step Python Package to preprocess text data for NLP tasks.
 
 
-A longer description of your project goes here...
+Installation
+------------
+
+.. code-block:: bash
+
+   pip install nlptextprep
+
+Usage
+-----
+
+.. code-block:: python
+
+   from text_preprocessor import preprocess_text
+
+   text = "This is a sample text containing a #hashtag, an @mention, and line breaks.\nCheck it out!"
+   cleaned_text = preprocess_text(text)
+   print(cleaned_text)
 
 
 .. _pyscaffold-notes:
