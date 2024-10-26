@@ -1,4 +1,4 @@
-from src.nlptextprep.utils import (
+from .utils import (
     to_lowercase,
     remove_line_breaks,
     remove_punctuation,
