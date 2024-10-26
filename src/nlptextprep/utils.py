@@ -53,43 +53,59 @@ def remove_line_breaks(input_string: str) -> str:
 
 def remove_punctuation(input_string: str) -> str:
     """
-    Remove all punctuation characters from the input string except dots between numbers and currency symbols.
+    Remove all punctuation characters from the input string except dots between numbers,
+    currency symbols, and URLs with http or https protocols.
     
     This function removes any character classified as punctuation (e.g., !, ?, etc.)
-    from the input string, but preserves dots when they are part of numeric values
-    and currency symbols (e.g., $, €, £).
+    from the input string, but preserves dots when they are part of numeric values,
+    currency symbols (e.g., $, €, £), and URLs starting with http or https.
     
     Args:
         input_string (str): The string from which to remove punctuation.
     
     Returns:
-        str: The processed string with punctuation removed, except for dots between numbers
-        and currency symbols.
+        str: The processed string with punctuation removed, except for dots between numbers,
+        currency symbols, and http/https URLs.
     """
     if not isinstance(input_string, str):
         raise ValueError("Input must be a string")
 
-    def replace_punctuation(match):
-        char = match.group(0)
-        if char == '.':
-            if (match.start() > 0 and match.end() < len(input_string) and 
-                input_string[match.start() - 1].isdigit() and input_string[match.end()].isdigit()):
+    # Pattern to identify URLs starting with http or https
+    url_pattern = r'(?:https?://[a-zA-Z0-9\-._~:/?#[\]@!$&\'()*+,;=%]+)'
+
+    # Split the string based on URLs
+    segments = re.split(f'({url_pattern})', input_string)
+
+    # Process each segment individually
+    cleaned_segments = []
+    for segment in segments:
+        # Skip punctuation removal for URL segments
+        if re.match(url_pattern, segment):
+            cleaned_segments.append(segment)
+            continue
+
+        # Function to decide if punctuation should be removed
+        def replace_punctuation(match):
+            char = match.group(0)
+            if char == '.':
+                if (match.start() > 0 and match.end() < len(segment) and 
+                    segment[match.start() - 1].isdigit() and segment[match.end()].isdigit()):
+                    return char
+                else:
+                    return ''
+            if unicodedata.category(char) == 'Sc':  # 'Sc' is the Unicode category for currency symbols
                 return char
-            else:
-                return ''
-        if unicodedata.category(char) == 'Sc':  # 'Sc' is the Unicode category for currency symbols
-            return char
-        return ''
+            return ''
 
-    # Use regex to substitute punctuation (excluding dots between numbers and currency symbols)
-    cleaned_string = re.sub(r'[^\w\s]', replace_punctuation, input_string)
+        # Substitute punctuation (excluding dots between numbers and currency symbols)
+        cleaned_segment = re.sub(r'[^\w\s]', replace_punctuation, segment)
+        
+        cleaned_segment = re.sub(r'\s+', ' ', cleaned_segment).strip()
+        
+        cleaned_segments.append(cleaned_segment)
 
-    if cleaned_string.endswith('.'):
-        cleaned_string = cleaned_string[:-1].rstrip()
-
-    cleaned_string = re.sub(r'\s+', ' ', cleaned_string).strip()
-
-    return cleaned_string
+    # Join all segments back together
+    return ' '.join(cleaned_segments).strip()
 
 def remove_stop_words(input_string: str) -> str:
     """
@@ -114,44 +130,63 @@ def remove_stop_words(input_string: str) -> str:
 
 def stem_text(input_string: str) -> str:
     """
-    Apply stemming to each word in the input string using the Porter Stemmer.
+    Apply stemming to each word in the input string using the Snowball Stemmer, while preserving URLs.
     
     Args:
         input_string (str): The input string to be stemmed.
     
     Returns:
-        str: The string with words stemmed.
+        str: The string with words stemmed, except for URLs.
     """
     if not isinstance(input_string, str):
         raise ValueError("Input must be a string")
 
+    # Initialize stemmer
     ps = SnowballStemmer(language='english')
-    words = word_tokenize(input_string)
-    stemmed_words = [ps.stem(word) for word in words]
 
-    cleaned_string = ' '.join(stemmed_words)
+    # Define URL pattern to skip URLs
+    url_pattern = r'https?://[a-zA-Z0-9\-._~:/?#[\]@!$&\'()*+,;=%]+'
 
-    cleaned_string = re.sub(r'\s+', ' ', cleaned_string).strip()
+    # Split the string based on URLs
+    segments = re.split(f'({url_pattern})', input_string)
+    
+    # Process each segment
+    processed_segments = []
+    for segment in segments:
+        # Skip stemming for URL segments
+        if re.match(url_pattern, segment):
+            processed_segments.append(segment)
+        else:
+            # Tokenize and stem non-URL segments
+            words = word_tokenize(segment)
+            stemmed_words = [ps.stem(word) for word in words]
+            processed_segments.append(' '.join(stemmed_words))
 
-    return cleaned_string
+    # Join segments with a single space and clean up extra spaces
+    cleaned_string = ' '.join(processed_segments).strip()
+    return re.sub(r'\s+', ' ', cleaned_string)
 
 def remove_special_characters(input_string: str) -> str:
     """
-    Remove special characters and normalize the input string while preserving dots between numbers and currency symbols.
+    Remove special characters and normalize the input string while preserving dots between numbers,
+    currency symbols, and URLs with http or https protocols.
     
     This function replaces special characters (such as '�') with their closest equivalents
-    or removes them entirely, except for dots in numbers and currency symbols. It uses
-    Unicode normalization and a regular expression to clean the string.
+    or removes them entirely, except for dots in numbers, currency symbols (e.g., €, £),
+    and URLs starting with http or https. It uses Unicode normalization and regular expressions to clean the string.
     
     Args:
         input_string (str): The input string to be cleaned.
     
     Returns:
         str: The cleaned string with special characters removed or replaced, while preserving
-        dots between numbers and currency symbols.
+        dots between numbers, currency symbols, and URLs.
     """
     if not isinstance(input_string, str):
         raise ValueError("Input must be a string")
+
+    # Pattern to identify URLs starting with http or https
+    url_pattern = r'(?:https?://[a-zA-Z0-9\-._~:/?#[\]@!$&\'()*+,;=%]+)'
 
     # Normalize Unicode characters (NFKD will decompose characters into base characters + accents)
     normalized_string = unicodedata.normalize('NFKD', input_string)
@@ -170,32 +205,44 @@ def remove_special_characters(input_string: str) -> str:
 
     # Apply the custom encoding function
     ascii_string = encode_except_currency(normalized_string)
-    # Define a function to replace special characters while preserving dots between numbers and currency symbols
-    def replace_special_characters(match):
-        char = match.group(0)
-        # Remove dots unless they are between digits
-        if char == '.':
-            if (match.start() > 0 and match.end() < len(input_string) and 
-                input_string[match.start() - 1].isdigit() and input_string[match.end()].isdigit()):
+
+    # Split the string based on URLs
+    segments = re.split(f'({url_pattern})', ascii_string)
+
+    # Process each segment individually
+    cleaned_segments = []
+    for segment in segments:
+        # Skip special character removal for URL segments
+        if re.match(url_pattern, segment):
+            cleaned_segments.append(segment)
+            continue
+
+        # Define a function to replace special characters while preserving dots between numbers and currency symbols
+        def replace_special_characters(match):
+            char = match.group(0)
+            # Remove dots unless they are between digits
+            if char == '.':
+                if (match.start() > 0 and match.end() < len(segment) and 
+                    segment[match.start() - 1].isdigit() and segment[match.end()].isdigit()):
+                    return char
+                else:
+                    return ''
+            # Preserve currency symbols
+            if unicodedata.category(char) == 'Sc':  # 'Sc' is the Unicode category for currency symbols
                 return char
-            else:
-                return ''
-        # Preserve currency symbols
-        if unicodedata.category(char) == 'Sc':  # 'Sc' is the Unicode category for currency symbols
-            return char
-        return ''
+            return ''
 
-    # Use regex to match any character that is not alphanumeric, space, apostrophe, hyphen, or currency symbol
-    cleaned_string = re.sub(r'[^\w\s\'\-\.]', replace_special_characters, ascii_string)
+        # Use regex to match any character that is not alphanumeric, space, apostrophe, hyphen, or currency symbol
+        cleaned_segment = re.sub(r'[^\w\s\'\-\.]', replace_special_characters, segment)
 
-    # Clean up extra spaces and strip leading/trailing whitespace
-    cleaned_string = re.sub(r'\s+', ' ', cleaned_string).strip()
+        # Clean up extra spaces and strip leading/trailing whitespace
+        cleaned_segment = re.sub(r'\s+', ' ', cleaned_segment).strip()
 
-    # Ensure no trailing period unless it's a valid part of the sentence
-    if cleaned_string.endswith('.'):
-        cleaned_string = cleaned_string[:-1].rstrip()
+        cleaned_segments.append(cleaned_segment)
 
-    return cleaned_string
+    # Join all segments back together with a single space
+    return ' '.join(cleaned_segments).strip()
+
 def remove_encoded_data(input_string: str) -> str:
     """
     Remove encoded data such as hexadecimal codes, URL encodings, or other encoded characters.

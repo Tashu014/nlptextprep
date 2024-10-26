@@ -8,6 +8,7 @@ __license__ = "MIT"
 class TestPreprocessing(unittest.TestCase):
     
     def test(self):
+        self.assertEqual(preprocess_text("HEllo https://www.natures-source.com/products/provita-lions-mane-5000-90-veggie-caps"), "hello https://www.natures-source.com/products/provita-lions-mane-5000-90-veggie-caps")
         self.assertEqual(preprocess_text("HELLO"), "hello")
         self.assertEqual(preprocess_text("Hello World"), "hello world")
         self.assertEqual(preprocess_text("123(ABC)!"), "123abc")
