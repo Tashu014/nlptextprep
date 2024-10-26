@@ -49,7 +49,7 @@ Usage
 
 .. code-block:: python
 
-   from text_preprocessor import preprocess_text
+   from nlptextprep import preprocess_text
 
    text = "This is a sample text containing a #hashtag, an @mention, and line breaks.\nCheck it out!"
    cleaned_text = preprocess_text(text)
