@@ -39,23 +39,23 @@ nlptextprep
 Features
 --------
 
-    TextCleanerPy includes the following functions:
+    nlptextprep includes the following functions:
 
-    to_lowercase: Converts the input string to lowercase for consistent text processing.
+    lowercase: Converts the input string to lowercase for consistent text processing.
 
-    remove_line_breaks: Replaces newline characters with spaces for better text flow.
+    remove line breaks: Replaces newline characters with spaces for better text flow.
 
-    remove_punctuation: Strips punctuation except for dots in numeric values, currency symbols, and URLs.
+    remove punctuation: Strips punctuation except for dots in numeric values, currency symbols, and URLs.
 
-    remove_stop_words: Removes English stop words (e.g., "the," "is") to focus on meaningful content.
+    remove stop words: Removes English stop words (e.g., "the," "is") to focus on meaningful content.
 
-    stem_text: Applies stemming to words while preserving URLs.
+    stem text: Applies stemming to words while preserving URLs.
 
-    remove_special_characters: Eliminates special characters, normalizing the text but preserving essential symbols.
+    remove special characters: Eliminates special characters, normalizing the text but preserving essential symbols.
 
-    remove_encoded_data: Cleans encoded data patterns like hexadecimal codes and URL encodings.
+    remove encoded data: Cleans encoded data patterns like hexadecimal codes and URL encodings.
 
-    remove_tags: Strips HTML, XML, or other tags while maintaining spacing for seamless readability.
+    remove tags: Strips HTML, XML, or other tags while maintaining spacing for seamless readability.
 
 
 
