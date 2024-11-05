@@ -37,7 +37,6 @@ nlptextprep
     One Step Python Package to preprocess text data for NLP tasks. This package is designed to clean, transform, and standardize text data, making it an ideal choice for applications in natural language processing, text analysis, and data cleaning.
 
 
-
 Installation
 ------------
 
