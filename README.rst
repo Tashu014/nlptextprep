@@ -51,7 +51,7 @@ Usage
 
    from nlptextprep import preprocess_text
 
-   text = "This is a sample text containing a #hashtag, an @mention, and line breaks.\nCheck it out!"
+   text = "This is a sample text containing a #hashtag, 100+ @mention in 70% , (4 - 2)/7 and line breaks in https://botpenguin.com .\nCheck it out!"
    cleaned_text = preprocess_text(text)
    print(cleaned_text)
 

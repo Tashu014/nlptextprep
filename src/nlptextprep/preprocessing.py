@@ -10,12 +10,12 @@ from .utils import (
 )
 
 def preprocess_text(text):
-    text = to_lowercase(text)
-    text = remove_line_breaks(text)
     text = remove_tags(text)
+    text = remove_line_breaks(text)
     text = remove_encoded_data(text)
     text = remove_punctuation(text)
-    text = remove_special_characters(text)
+    text = to_lowercase(text)
     text = remove_stop_words(text)
+    text = remove_special_characters(text)
     text = stem_text(text)
     return text

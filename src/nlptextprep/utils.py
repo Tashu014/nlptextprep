@@ -54,7 +54,7 @@ def remove_line_breaks(input_string: str) -> str:
 def remove_punctuation(input_string: str) -> str:
     """
     Remove all punctuation characters from the input string except dots between numbers,
-    currency symbols, and URLs with http or https protocols.
+    currency symbols, email addresses, and URLs with http or https protocols.
     
     This function removes any character classified as punctuation (e.g., !, ?, etc.)
     from the input string, but preserves dots when they are part of numeric values,
@@ -65,34 +65,49 @@ def remove_punctuation(input_string: str) -> str:
     
     Returns:
         str: The processed string with punctuation removed, except for dots between numbers,
-        currency symbols, and http/https URLs.
+        currency symbols, email addresses, and http/https URLs.
     """
     if not isinstance(input_string, str):
         raise ValueError("Input must be a string")
 
     # Pattern to identify URLs starting with http or https
     url_pattern = r'(?:https?://[a-zA-Z0-9\-._~:/?#[\]@!$&\'()*+,;=%]+)'
+    email_pattern = r'[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}'
 
     # Split the string based on URLs
-    segments = re.split(f'({url_pattern})', input_string)
+    segments = re.split(f'({url_pattern}|{email_pattern})', input_string)
 
     # Process each segment individually
     cleaned_segments = []
     for segment in segments:
+        segment = segment.strip()
         # Skip punctuation removal for URL segments
-        if re.match(url_pattern, segment):
+        if re.match(url_pattern, segment) or re.match(email_pattern, segment):
             cleaned_segments.append(segment)
             continue
+
+        # Remove parentheses if they enclose English text
+        def remove_text_in_parentheses(segment):
+            return re.sub(r'\(([a-zA-Z\s]+)\)', r'\1', segment)
+
+        # Apply the function to remove text enclosed in parentheses
+        segment = remove_text_in_parentheses(segment)
 
         # Function to decide if punctuation should be removed
         def replace_punctuation(match):
             char = match.group(0)
-            if char == '.':
-                if (match.start() > 0 and match.end() < len(segment) and 
-                    segment[match.start() - 1].isdigit() and segment[match.end()].isdigit()):
+            start = match.start()
+            end = match.end()
+
+            # Generalized condition: Preserve punctuation if it's between, before, or after digits, or within mathematical expressions
+            if char in './-+%()':
+                # Preserve if surrounded by digits or spaces followed by digits
+                if ((start > 0 and segment[start - 1].isdigit()) or (end < len(segment) and segment[end].isdigit())) or \
+                   ((start > 0 and segment[start - 1].isdigit()) and (end < len(segment) and segment[end].isspace())) or \
+                   ((start > 0 and segment[start - 1].isspace()) and (end < len(segment) and segment[end].isdigit())) or \
+                   (start > 0 and char in '()-'):
                     return char
-                else:
-                    return ''
+                return ''
             if unicodedata.category(char) == 'Sc':  # 'Sc' is the Unicode category for currency symbols
                 return char
             return ''
@@ -130,7 +145,7 @@ def remove_stop_words(input_string: str) -> str:
 
 def stem_text(input_string: str) -> str:
     """
-    Apply stemming to each word in the input string using the Snowball Stemmer, while preserving URLs.
+    Apply stemming to each word in the input string using the Snowball Stemmer, while preserving URLs and email addresses.
     
     Args:
         input_string (str): The input string to be stemmed.
@@ -146,15 +161,17 @@ def stem_text(input_string: str) -> str:
 
     # Define URL pattern to skip URLs
     url_pattern = r'https?://[a-zA-Z0-9\-._~:/?#[\]@!$&\'()*+,;=%]+'
+    email_pattern = r'[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}'
 
     # Split the string based on URLs
-    segments = re.split(f'({url_pattern})', input_string)
+    segments = re.split(f'({url_pattern}|{email_pattern})', input_string)
     
     # Process each segment
     processed_segments = []
     for segment in segments:
+        segment = segment.strip()
         # Skip stemming for URL segments
-        if re.match(url_pattern, segment):
+        if re.match(url_pattern, segment) or re.match(email_pattern, segment):
             processed_segments.append(segment)
         else:
             # Tokenize and stem non-URL segments
@@ -169,7 +186,7 @@ def stem_text(input_string: str) -> str:
 def remove_special_characters(input_string: str) -> str:
     """
     Remove special characters and normalize the input string while preserving dots between numbers,
-    currency symbols, and URLs with http or https protocols.
+    currency symbols, email addresses, and URLs with http or https protocols.
     
     This function replaces special characters (such as '�') with their closest equivalents
     or removes them entirely, except for dots in numbers, currency symbols (e.g., €, £),
@@ -180,13 +197,14 @@ def remove_special_characters(input_string: str) -> str:
     
     Returns:
         str: The cleaned string with special characters removed or replaced, while preserving
-        dots between numbers, currency symbols, and URLs.
+        dots between numbers, currency symbols, emails, and URLs.
     """
     if not isinstance(input_string, str):
         raise ValueError("Input must be a string")
 
     # Pattern to identify URLs starting with http or https
     url_pattern = r'(?:https?://[a-zA-Z0-9\-._~:/?#[\]@!$&\'()*+,;=%]+)'
+    email_pattern = r'[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}'
 
     # Normalize Unicode characters (NFKD will decompose characters into base characters + accents)
     normalized_string = unicodedata.normalize('NFKD', input_string)
@@ -212,22 +230,27 @@ def remove_special_characters(input_string: str) -> str:
     # Process each segment individually
     cleaned_segments = []
     for segment in segments:
+        segment = segment.strip()
         # Skip special character removal for URL segments
-        if re.match(url_pattern, segment):
+        if re.match(url_pattern, segment) or re.match(email_pattern, segment):
             cleaned_segments.append(segment)
             continue
 
         # Define a function to replace special characters while preserving dots between numbers and currency symbols
         def replace_special_characters(match):
             char = match.group(0)
-            # Remove dots unless they are between digits
-            if char == '.':
-                if (match.start() > 0 and match.end() < len(segment) and 
-                    segment[match.start() - 1].isdigit() and segment[match.end()].isdigit()):
+            start = match.start()
+            end = match.end()
+
+            # Generalized condition: Preserve punctuation if it's between, before, or after digits, or within mathematical expressions
+            if char in './-+%()':
+                # Preserve if surrounded by digits or spaces followed by digits
+                if ((start > 0 and segment[start - 1].isdigit()) or (end < len(segment) and segment[end].isdigit())) or \
+                   ((start > 0 and segment[start - 1].isdigit()) and (end < len(segment) and segment[end].isspace())) or \
+                   ((start > 0 and segment[start - 1].isspace()) and (end < len(segment) and segment[end].isdigit())) or \
+                   (start > 0 and char in '()-'):
                     return char
-                else:
-                    return ''
-            # Preserve currency symbols
+                return ''
             if unicodedata.category(char) == 'Sc':  # 'Sc' is the Unicode category for currency symbols
                 return char
             return ''

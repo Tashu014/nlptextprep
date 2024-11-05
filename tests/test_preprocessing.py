@@ -8,10 +8,12 @@ __license__ = "MIT"
 class TestPreprocessing(unittest.TestCase):
     
     def test(self):
+        self.assertEqual(preprocess_text("(4 - 2)/7"), "( 4 - 2 ) /7")
+        self.assertEqual(preprocess_text("capetown@optique.co.za"), "capetown@optique.co.za")
         self.assertEqual(preprocess_text("HEllo https://www.natures-source.com/products/provita-lions-mane-5000-90-veggie-caps"), "hello https://www.natures-source.com/products/provita-lions-mane-5000-90-veggie-caps")
         self.assertEqual(preprocess_text("HELLO"), "hello")
         self.assertEqual(preprocess_text("Hello World"), "hello world")
-        self.assertEqual(preprocess_text("123(ABC)!"), "123abc")
+        self.assertEqual(preprocess_text("123 (ABC)!"), "123 abc")
         self.assertEqual(preprocess_text("ÄÖÜ"), "aou")
         self.assertEqual(preprocess_text(""), "")
         self.assertEqual(preprocess_text("Line one\nLine two"), "line one line two")
