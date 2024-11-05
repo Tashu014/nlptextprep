@@ -36,27 +36,6 @@ nlptextprep
 
     One Step Python Package to preprocess text data for NLP tasks. This package is designed to clean, transform, and standardize text data, making it an ideal choice for applications in natural language processing, text analysis, and data cleaning.
 
-Features
---------
-
-    nlptextprep includes the following functions:
-
-    lowercase: Converts the input string to lowercase for consistent text processing.
-
-    remove line breaks: Replaces newline characters with spaces for better text flow.
-
-    remove punctuation: Strips punctuation except for dots in numeric values, currency symbols, and URLs.
-
-    remove stop words: Removes English stop words (e.g., "the," "is") to focus on meaningful content.
-
-    stem text: Applies stemming to words while preserving URLs.
-
-    remove special characters: Eliminates special characters, normalizing the text but preserving essential symbols.
-
-    remove encoded data: Cleans encoded data patterns like hexadecimal codes and URL encodings.
-
-    remove tags: Strips HTML, XML, or other tags while maintaining spacing for seamless readability.
-
 
 
 Installation
