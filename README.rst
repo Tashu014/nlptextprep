@@ -33,9 +33,7 @@
 nlptextprep
 ===========
 
-
-    One Step Python Package to preprocess text data for NLP tasks. This package is designed to clean, transform, and standardize text data, making it an ideal choice for applications in natural language processing, text analysis, and data cleaning.
-
+One Step Python Package to preprocess text data for NLP tasks. This package is designed to clean, transform, and standardize text data, making it an ideal choice for applications in natural language processing, text analysis, and data cleaning.
 
 Installation
 ------------
@@ -54,7 +52,6 @@ Usage
    text = "This is a sample text containing a #hashtag, 100+ @mention in 70% , (4 - 2)/7 and line breaks in https://botpenguin.com .\nCheck it out!"
    cleaned_text = preprocess_text(text)
    print(cleaned_text)
-
 
 .. _pyscaffold-notes:
 
