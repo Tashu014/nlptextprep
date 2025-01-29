@@ -53,6 +53,8 @@ Usage
    cleaned_text = preprocess_text(text)
    print(cleaned_text)
 
+You can find the package on PyPI at: https://pypi.org/project/nlptextprep/
+
 .. _pyscaffold-notes:
 
 Note
